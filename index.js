@@ -1,7 +1,11 @@
 const express = require("express")
 const app = express()
+const morgan = require("morgan")
 
 app.use(express.json())
+
+morgan.token('body', (req) => JSON.stringify(req.body))
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 let persons = [
     { 
@@ -56,7 +60,7 @@ app.get("/info", (request, response) => {
 
 app.delete("/api/persons/:id", (request, response) => {
     const id = request.params.id
-    person = persons.find(p => p.id === id)
+    const person = persons.find(p => p.id === id)
     
     if (!person) {
         response.statusMessage = `Person ${id} does not exist`
@@ -110,3 +114,9 @@ const PORT = 3001
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`)
 })
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
